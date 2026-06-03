@@ -1,7 +1,7 @@
 # Mechanistic Interpretability of Domain-Specific Fine-Tuning in LLMs
 
 > Tracking Sparse Autoencoder Feature Shifts in Pythia-160M Before and After Code Domain Adaptation  
-> Delhi Technological University — Ritwik Jain
+
 
 ---
 
@@ -15,26 +15,7 @@ We train a **TopK Sparse Autoencoder (SAE)** on the residual stream activations 
 
 ## Repository Structure
 
-> The codebase is currently a single notebook and will be refactored into the structure below. Module names are final; file locations may shift slightly during conversion.
-
-```
-.
-├── notebooks/
-│   └── full_pipeline.ipynb          # End-to-end notebook (current state)
-│
-├── src/                             # (in progress — converted from notebook)
-│   ├── collect_activations.py       # Hook into blocks.8.hook_resid_post, stream tokens
-│   ├── train_sae.py                 # TopK SAE training via SAELens
-│   ├── finetune.py                  # Fine-tune Pythia-160M on Python code corpus
-│   ├── compare_features.py          # Cosine similarity matrix + Hungarian matching
-│   └── visualize.py                 # Histograms, heatmaps, monosemanticity plots
-│
-├── configs/
-│   └── sae_config.yaml              # SAE hyperparameters (d_sae, k, lr, etc.)
-│
-├── requirements.txt
-└── README.md
-```
+> The codebase is currently a single notebook and will be refactored 
 
 ---
 
@@ -50,7 +31,7 @@ We train a **TopK Sparse Autoencoder (SAE)** on the residual stream activations 
 | **Fine-tuning objective** | Causal language modelling, 1 epoch |
 | **Fine-tuning LR** | `5e-6` (cosine schedule, 200 warmup steps) |
 | **Comparison method** | Pairwise cosine similarity + Hungarian algorithm matching |
-| **Hardware** | NVIDIA T4 16GB (Google Colab Free Tier) |
+| **Hardware** | NVIDIA T4 16GB (Google Colab Free Tier/Kaggle) |
 
 ---
 
@@ -64,17 +45,7 @@ Both SAE checkpoints (base and fine-tuned) and the fine-tuned Pythia-160M weight
 > 
 > **[SAE_Base](https://drive.google.com/drive/folders/1nkJoasDfC07ya0bc4Jo-gc_6Qigcclzj?usp=sharing)**
 
-Place downloaded files as follows:
 
-```
-weights/
-├── sae_base.pt                  # SAE trained on base Pythia-160M
-├── sae_finetuned.pt             # SAE trained on fine-tuned Pythia-160M
-└── pythia_160m_python_ft/       # Fine-tuned HuggingFace model directory
-    ├── config.json
-    ├── pytorch_model.bin
-    └── tokenizer files...
-```
 
 > **Important:** The fine-tuned HuggingFace weights must be loaded via `HookedTransformer.from_pretrained(..., hf_model=raw_hf_model)` to prevent SAELens from silently defaulting to the base model weights. See `src/collect_activations.py` for the correct loading pattern.
 
@@ -82,14 +53,7 @@ weights/
 
 ## Setup
 
-### 1. Clone the repo
-
-```bash
-git clone https://github.com/<your-username>/<your-repo-name>.git
-cd <your-repo-name>
-```
-
-### 2. Install dependencies
+### Install dependencies
 
 Python 3.10+ recommended. A GPU with at least 12GB VRAM is required for SAE training; the comparison pipeline can run on CPU.
 
@@ -109,7 +73,6 @@ wandb
 scipy
 numpy
 matplotlib
-seaborn
 ```
 
 ### 3. (Optional) Log in to Weights & Biases
@@ -119,65 +82,6 @@ Training runs log to W&B. Skip this if you don't want experiment tracking.
 ```bash
 wandb login
 ```
-
----
-
-## Reproducing the Full Pipeline
-
-You can either run the end-to-end notebook or execute the individual stages below once the refactor is complete.
-
-### Stage 1 — Collect base model activations & train base SAE
-
-```bash
-python src/collect_activations.py --model base --output_dir activations/base/
-python src/train_sae.py --activations_dir activations/base/ --output weights/sae_base.pt
-```
-
-### Stage 2 — Fine-tune Pythia-160M
-
-```bash
-python src/finetune.py \
-  --dataset flytech/python-codes-25k \
-  --num_samples 5000 \
-  --output_dir weights/pythia_160m_python_ft/
-```
-
-### Stage 3 — Collect fine-tuned model activations & train fine-tuned SAE
-
-```bash
-python src/collect_activations.py --model finetuned \
-  --hf_weights_dir weights/pythia_160m_python_ft/ \
-  --output_dir activations/finetuned/
-python src/train_sae.py --activations_dir activations/finetuned/ --output weights/sae_finetuned.pt
-```
-
-### Stage 4 — Compare feature sets
-
-```bash
-python src/compare_features.py \
-  --base_sae weights/sae_base.pt \
-  --ft_sae weights/sae_finetuned.pt \
-  --output_dir results/
-```
-
-### Stage 5 — Visualize
-
-```bash
-python src/visualize.py --results_dir results/
-```
-
-Or to skip straight to analysis using the provided weights:
-
-```bash
-python src/compare_features.py \
-  --base_sae weights/sae_base.pt \
-  --ft_sae weights/sae_finetuned.pt \
-  --output_dir results/
-
-python src/visualize.py --results_dir results/
-```
-
----
 
 ## Key Implementation Notes
 
