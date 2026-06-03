@@ -60,9 +60,9 @@ Both SAE checkpoints (base and fine-tuned) and the fine-tuned Pythia-160M weight
 
 > **[Python Finetuned](https://drive.google.com/drive/folders/1GwD-Bww7ta7GyOzrIOqKRL4wqj8eRt5c?usp=share_link)**
 > 
-> **[SAE Finetuned Checkpoint](https://drive.google.com/drive/folders/1dG9EmK4SOCfHNfvF9gBaVPd9nFLutTTa?usp=share_link)**
+> **[SAE Finetuned](https://drive.google.com/drive/folders/1dG9EmK4SOCfHNfvF9gBaVPd9nFLutTTa?usp=share_link)**
 > 
-> **[Python Finetuned](https://drive.google.com/drive/folders/1nkJoasDfC07ya0bc4Jo-gc_6Qigcclzj?usp=sharing)**
+> **[SAE_Base](https://drive.google.com/drive/folders/1nkJoasDfC07ya0bc4Jo-gc_6Qigcclzj?usp=sharing)**
 
 Place downloaded files as follows:
 
